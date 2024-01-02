@@ -3,9 +3,11 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+//! elevated-command - Run command using `sudo`, prompting the user with a graphical OS dialog if necessary
+use std::convert::From;
 use std::process::Command as StdCommand;
-use std::ffi::OsStr;
 
+/// Wrap of std::process::command and escalate privileges while executing
 pub struct Command {
     cmd: StdCommand,
     #[allow(dead_code)]
@@ -14,31 +16,147 @@ pub struct Command {
     name: Option<String>,
 }
 
+/// Command initialization shares the same logic across all the platforms
 impl Command {
-    pub fn new<S: AsRef<OsStr>>(program: S) -> Self {
+    /// Constructs a new `Command` from a std::process::Command 
+    /// instance, it would read the following configuration from
+    /// the instance while executing:
+    ///
+    /// * The instance's path to the program
+    /// * The instance's arguments
+    /// * The instance's environment variables
+    /// * The instance's working directory
+    /// 
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use elevated_command::Command;
+    /// use std::process::Command as StdCommand;
+    ///
+    /// fn main() {
+    ///     let mut cmd = StdCommand::new("path to the application");
+    ///
+    ///     cmd.arg("some arg");
+    ///     cmd.env("some key", "some value");
+    ///
+    ///     let elevated_cmd = Command::new(cmd);
+    /// }
+    /// ```
+    pub fn new(cmd: StdCommand) -> Self {
         Self {
-            cmd: StdCommand::new(program),
+            cmd,
             icon: None,
             name: None,
         }
     }
 
-    /// Adds an argument to pass to the program.
-    /// Same as std::process::Command::arg method.
-    pub fn arg<S: AsRef<OsStr>>(&mut self, arg: S) -> &mut Command {
-        self.cmd.arg(arg);
+    /// Consumes the `Take`, returning the wrapped std::process::Command
+    /// 
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use elevated_command::Command;
+    /// use std::process::Command as StdCommand;
+    ///
+    /// fn main() {
+    ///     let mut cmd = StdCommand::new("path to the application");
+    ///     let elevated_cmd = Command::new(cmd);
+    ///     let cmd = elevated_cmd.into_inner();
+    /// }
+    /// ```
+    pub fn into_inner(self) -> StdCommand {
+        self.cmd
+    }
+
+    /// Gets a mutable reference to the underlying std::process::Command
+    /// 
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use elevated_command::Command;
+    /// use std::process::Command as StdCommand;
+    ///
+    /// fn main() {
+    ///     let mut cmd = StdCommand::new("path to the application");
+    ///     let elevated_cmd = Command::new(cmd);
+    ///     let cmd = elevated_cmd.get_ref();
+    /// }
+    /// ```
+    pub fn get_ref(&self) -> &StdCommand {
+        &self.cmd
+    }
+
+    /// Gets a reference to the underlying std::process::Command
+    /// 
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use elevated_command::Command;
+    /// use std::process::Command as StdCommand;
+    ///
+    /// fn main() {
+    ///     let mut cmd = StdCommand::new("path to the application");
+    ///     let elevated_cmd = Command::new(cmd);
+    ///     let cmd = elevated_cmd.get_mut();
+    /// }
+    /// ```
+    pub fn get_mut(&mut self) -> &mut StdCommand {
+        &mut self.cmd
+    }
+
+    /// Set the `icon` for the pop-up graphical OS dialog
+    /// 
+    /// This method is only applicable on `MacOS`
+    /// 
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use elevated_command::Command;
+    /// use std::process::Command as StdCommand;
+    ///
+    /// fn main() {
+    ///     let mut cmd = StdCommand::new("path to the application");
+    ///     let elevated_cmd = Command::new(cmd);
+    ///     elevated_cmd.icon(include_bytes!("path to the icon").to_vec());
+    /// }
+    /// ```
+    pub fn icon(&mut self, icon: Vec<u8>) -> &mut Self {
+        self.icon = Some(icon);
         self
     }
 
-    /// Adds multiple arguments to pass to the program.
-    /// Same as std::process::Command::args method.
-    pub fn args<I, S>(&mut self, args: I) -> &mut Command
-    where
-        I: IntoIterator<Item = S>,
-        S: AsRef<OsStr>,
-    {
-        self.cmd.args(args);
+    /// Set the name for the pop-up graphical OS dialog
+    /// 
+    /// This method is only applicable on `MacOS`
+    /// 
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use elevated_command::Command;
+    /// use std::process::Command as StdCommand;
+    ///
+    /// fn main() {
+    ///     let mut cmd = StdCommand::new("path to the application");
+    ///     let elevated_cmd = Command::new(cmd);
+    ///     elevated_cmd.name("some name".to_string());
+    /// }
+    /// ```
+    pub fn name(&mut self, name: String) -> &mut Self {
+        self.name = Some(name);
         self
+    }
+}
+
+impl From<StdCommand> for Command {
+    /// Converts from a std::process::Command
+    /// 
+    /// It is similiar with the construct method
+    fn from(cmd: StdCommand) -> Self {
+        Self {
+            cmd,
+            icon: None,
+            name: None,
+        }
     }
 }
 
