@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-// Thanks to https://github.com/bpasero/sudo-prompt/blob/vscode/index.js
+// Thanks to https://github.com/jorangreef/sudo-prompt/blob/master/index.js
 // MIT License
 //
 // Copyright (c) 2015 Joran Dirk Greef
