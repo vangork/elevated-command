@@ -15,6 +15,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "35636a1494ede3b646cc98f74f8e62c773a38a659ebc777a2cf26b9b74171df9"
 
 [[package]]
+name = "elevated-command"
+version = "1.0.0"
+dependencies = [
+ "anyhow",
+ "base64",
+ "libc",
+ "log",
+ "winapi",
+ "windows",
+]
+
+[[package]]
 name = "libc"
 version = "0.2.151"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -25,18 +37,6 @@ name = "log"
 version = "0.4.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b5e6163cb8c49088c2c36f57875e58ccd8c87c7427f7fbd50ea6710b2f3f2e8f"
-
-[[package]]
-name = "sudo-prompt"
-version = "1.0.0"
-dependencies = [
- "anyhow",
- "base64",
- "libc",
- "log",
- "winapi",
- "windows",
-]
 
 [[package]]
 name = "winapi"
