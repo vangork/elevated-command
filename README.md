@@ -1,5 +1,8 @@
 # elevated-command
 
+[![crates.io](https://img.shields.io/crates/v/elevated-command?logo=rust)](https://crates.io/crates/elevated-command/)
+[![docs.rs](https://docs.rs/elevated-command/badge.svg)](https://docs.rs/elevated-command)
+
 Run command using `sudo`, prompting the user with a graphical OS dialog if necessary. Useful for background rust applications or native [Tauri](https://tauri.app/) apps that need `sudo`.
 
 
