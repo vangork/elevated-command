@@ -18,7 +18,7 @@ Add the following to your Cargo.toml:
 
 ```
 [dependencies]
-elevated-command = "1.0"
+elevated-command = "1.1"
 ```
 
 In your `main.rs`: 
