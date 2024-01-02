@@ -16,4 +16,4 @@ On MacOS, `elevated-command` should behave just like the `sudo` command in the s
 [jorangreef/sudo-prompt](https://github.com/jorangreef/sudo-prompt)
 
 ## License
-[Apache-2.0](https://raw.githubusercontent.com/vangork/elevated-command/main/LICENSE)
+Licensed under the [MIT](https://github.com/vangork/elevated-command/blob/main/LICENSE) license.
