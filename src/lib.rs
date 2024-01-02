@@ -2,7 +2,9 @@
  *  Copyright (c) Luis Liu. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-
+//! [![crates.io](https://img.shields.io/crates/v/elevated-command?logo=rust)](https://crates.io/crates/elevated-command/)
+//! [![docs.rs](https://docs.rs/elevated-command/badge.svg)](https://docs.rs/elevated-command)
+//! 
 //! elevated-command - Run command using `sudo`, prompting the user with a graphical OS dialog if necessary
 use std::convert::From;
 use std::process::Command as StdCommand;
