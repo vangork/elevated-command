@@ -11,7 +11,22 @@ use std::path::PathBuf;
 use std::process::{Command as StdCommand, Output};
 use std::str::FromStr;
 
+/// The implementation of state check and elevated executing varies on each platform
 impl Command {
+    /// Check the state the current program running
+    /// 
+    /// Return `true` if the program is running as root, otherwise false
+    /// 
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use elevated_command::Command;
+    ///
+    /// fn main() {
+    ///     let is_elevated = Command::is_elevated();
+    ///
+    /// }
+    /// ```
     pub fn is_elevated() -> bool {
         let uid = unsafe { 
             libc::getuid()
@@ -23,6 +38,21 @@ impl Command {
         }
     }
 
+    /// Prompting the user with a graphical OS dialog for the root password, 
+    /// excuting the command with escalated privileges, and return the output
+    /// 
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use elevated_command::Command;
+    /// use std::process::Command as StdCommand;
+    ///
+    /// fn main() {
+    ///     let mut cmd = StdCommand::new("path to the application");
+    ///     let elevated_cmd = Command::new(cmd);
+    ///     let output = elevated_cmd.output().unwrap();
+    /// }
+    /// ```
     pub fn output(&self) -> Result<Output> {
         let pkexec = PathBuf::from_str("/bin/pkexec")?;
         let mut command = StdCommand::new(pkexec);
