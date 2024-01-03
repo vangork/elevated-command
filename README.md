@@ -59,6 +59,7 @@ On MacOS, `elevated-command` should behave just like the `sudo` command in the s
 ## Reference
 1. [jorangreef/sudo-prompt](https://github.com/jorangreef/sudo-prompt)
 2. https://stackoverflow.com/questions/8046097/how-to-check-if-a-process-has-the-administrative-rights/8196291#8196291
+3. https://fix.moe/post/macos-app-authorization
 
 
 ## License
