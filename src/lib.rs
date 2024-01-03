@@ -27,7 +27,11 @@ impl Command {
     /// * The instance's path to the program
     /// * The instance's arguments
     /// * The instance's environment variables
-    /// * The instance's working directory
+    /// 
+    /// Current working directory would be the following while executing the command:
+    ///   - %SystemRoot%\System32 on Windows
+    ///   - /root on Linux
+    ///   - $TMPDIR/sudo_prompt_applet/applet.app/Contents/MacOS on MacOS
     /// 
     /// # Examples
     ///

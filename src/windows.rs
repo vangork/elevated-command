@@ -79,14 +79,16 @@ impl Command {
         let args = self.cmd.get_args()
             .map(|c| c.to_str().unwrap().to_string())
             .collect::<Vec<String>>();
-        let lpparameters = if args.is_empty() {
-            PCWSTR::null()
+        let parameters = if args.is_empty() {
+            HSTRING::new()
         } else {
             let arg_str = args.join(" ");
-            PCWSTR(HSTRING::from(arg_str).as_ptr())
+            HSTRING::from(arg_str)
         };
 
-        let r = unsafe { ShellExecuteW(HWND(0), w!("runas"), &HSTRING::from(self.cmd.get_program()), lpparameters, PCWSTR::null(), SW_HIDE) };
+        // according to https://stackoverflow.com/a/38034535
+        // the cwd always point to %SystemRoot%\System32 and cannot be changed by settting lpdirectory param
+        let r = unsafe { ShellExecuteW(HWND(0), w!("runas"), &HSTRING::from(self.cmd.get_program()), &HSTRING::from(parameters), PCWSTR::null(), SW_HIDE) };
         // https://learn.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-shellexecutew#return-value
         if r.0 < 32 {
             bail!("error: {:?}", r);
