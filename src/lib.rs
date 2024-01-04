@@ -28,10 +28,21 @@ impl Command {
     /// * The instance's arguments
     /// * The instance's environment variables
     /// 
+    /// So far, the new `Command` would only take the environment variables explicitly 
+    /// set by std::process::Command::env and std::process::Command::env, 
+    /// without the ones inherited from the parent process
+    /// 
+    /// And the environment variables would only be taken on Linux and MacOS, 
+    /// they would be ignored on Windows
+    /// 
     /// Current working directory would be the following while executing the command:
     ///   - %SystemRoot%\System32 on Windows
     ///   - /root on Linux
     ///   - $TMPDIR/sudo_prompt_applet/applet.app/Contents/MacOS on MacOS
+    /// 
+    /// To pass environment variables on Windows, 
+    /// to inherit environment variables from the parent process and 
+    /// to change the working directory will be supported in later versions
     /// 
     /// # Examples
     ///

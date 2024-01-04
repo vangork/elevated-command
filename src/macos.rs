@@ -14,7 +14,7 @@
 // SOFTWARE.
 
 use crate::Command;
-use anyhow::{Result, bail, Ok};
+use anyhow::{anyhow, bail, Result};
 use base64::{Engine as _, engine::general_purpose};
 use std::env;
 use std::fs::{create_dir, read, read_dir, remove_dir_all, write};
@@ -121,6 +121,15 @@ impl Command {
         let prompt_command = applet.join("Contents").join("MacOS").join("sudo-prompt-command");
         let mut contents: Vec<u8> = vec!();
         let mut writer: Box<&mut dyn Write> = Box::new(&mut contents);
+        for (k, v) in self.cmd.get_envs() {
+            if let Some(value) = v {
+                writeln!(writer, r#"export {}="{}""#, 
+                    k.to_str().ok_or(anyhow!("invalid key"))?,
+                    value.to_str().ok_or(anyhow!("invalid value"))?,
+                )?;
+            }
+        }
+
         let args = self.cmd.get_args()
             .map(|c| c.to_str().unwrap().to_string())
             .collect::<Vec<String>>();

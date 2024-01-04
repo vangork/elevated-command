@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 use crate::Command;
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use std::env;
 use std::ffi::OsStr;
 use std::path::PathBuf;
@@ -72,7 +72,20 @@ impl Command {
             if let Ok(home) = home {
                 command.arg(format!("HOME={}", home));
             }
+        } else {
+            if self.cmd.get_envs().any(|(k, v)| v.is_some()) {
+                command.arg("env");
+            }
         }
+        for (k, v) in self.cmd.get_envs() {
+            if let Some(value) = v {
+                command.arg(format!("{}={}",
+                    k.to_str().ok_or(anyhow!("invalid key"))?,
+                    value.to_str().ok_or(anyhow!("invalid value"))?
+                ));
+            }
+        }
+
         command.arg(self.cmd.get_program());
         let args: Vec<&OsStr> = self.cmd.get_args().collect();
         if !args.is_empty() {

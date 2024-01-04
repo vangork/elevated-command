@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 use crate::Command;
-use anyhow::{bail, Result};
+use anyhow::Result;
 use std::mem;
 use std::os::windows::process::ExitStatusExt;
 use std::process::{Output, ExitStatus};
@@ -63,6 +63,12 @@ impl Command {
     /// Prompting the user with a graphical OS dialog for the root password, 
     /// excuting the command with escalated privileges, and return the output
     /// 
+    /// On Windows, according to https://learn.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-shellexecutew#return-value,
+    /// Output.status.code() shoudl be greater than 32 if the function succeeds, 
+    /// otherwise the value indicates the cause of the failure
+    /// 
+    /// On Windows, Output.stdout and Output.stderr will always be empty as of now 
+    /// 
     /// # Examples
     ///
     /// ```no_run
@@ -88,11 +94,16 @@ impl Command {
 
         // according to https://stackoverflow.com/a/38034535
         // the cwd always point to %SystemRoot%\System32 and cannot be changed by settting lpdirectory param
-        let r = unsafe { ShellExecuteW(HWND(0), w!("runas"), &HSTRING::from(self.cmd.get_program()), &HSTRING::from(parameters), PCWSTR::null(), SW_HIDE) };
-        // https://learn.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-shellexecutew#return-value
-        if r.0 < 32 {
-            bail!("error: {:?}", r);
-        }
+        let r = unsafe { 
+            ShellExecuteW(
+                HWND(0), 
+                w!("runas"), 
+                &HSTRING::from(self.cmd.get_program()), 
+                &HSTRING::from(parameters), 
+                PCWSTR::null(), 
+                SW_HIDE
+            ) 
+        };
         Ok(Output {
             status: ExitStatus::from_raw(r.0 as u32),
             stdout: Vec::<u8>::new(),
