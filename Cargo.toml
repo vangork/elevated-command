@@ -1,7 +1,9 @@
 [package]
 name = "elevated-command"
 description = "Run a command using sudo, prompting the user with an OS dialog if necessary"
+homepage = "https://github.com/vangork/elevated-command"
 repository = "https://github.com/vangork/elevated-command"
+documentation = "https://docs.rs/elevated-command"
 authors = ["Luis Liu <vangork@live.com>"]
 license = "MIT"
 readme = "README.md"
