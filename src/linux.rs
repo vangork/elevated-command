@@ -73,7 +73,7 @@ impl Command {
                 command.arg(format!("HOME={}", home));
             }
         } else {
-            if self.cmd.get_envs().any(|(k, v)| v.is_some()) {
+            if self.cmd.get_envs().any(|(_, v)| v.is_some()) {
                 command.arg("env");
             }
         }
