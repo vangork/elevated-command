@@ -14,44 +14,37 @@ use std::str::FromStr;
 /// The implementation of state check and elevated executing varies on each platform
 impl Command {
     /// Check the state the current program running
-    /// 
+    ///
     /// Return `true` if the program is running as root, otherwise false
-    /// 
+    ///
     /// # Examples
     ///
     /// ```no_run
     /// use elevated_command::Command;
     ///
-    /// fn main() {
-    ///     let is_elevated = Command::is_elevated();
-    ///
-    /// }
+    /// let is_elevated = Command::is_elevated();
     /// ```
     pub fn is_elevated() -> bool {
-        let uid = unsafe { 
-            libc::getuid()
-        };
-        if uid == 0 { 
-            true 
-        } else { 
-            false 
+        let uid = unsafe { libc::getuid() };
+        if uid == 0 {
+            true
+        } else {
+            false
         }
     }
 
-    /// Prompting the user with a graphical OS dialog for the root password, 
+    /// Prompting the user with a graphical OS dialog for the root password,
     /// excuting the command with escalated privileges, and return the output
-    /// 
+    ///
     /// # Examples
     ///
     /// ```no_run
     /// use elevated_command::Command;
     /// use std::process::Command as StdCommand;
     ///
-    /// fn main() {
-    ///     let mut cmd = StdCommand::new("path to the application");
-    ///     let elevated_cmd = Command::new(cmd);
-    ///     let output = elevated_cmd.output().unwrap();
-    /// }
+    /// let mut cmd = StdCommand::new("path to the application");
+    /// let elevated_cmd = Command::new(cmd);
+    /// let output = elevated_cmd.output().unwrap();
     /// ```
     pub fn output(&self) -> Result<Output> {
         let mut command = StdCommand::new("pkexec");
@@ -78,7 +71,8 @@ impl Command {
         }
         for (k, v) in self.cmd.get_envs() {
             if let Some(value) = v {
-                command.arg(format!("{}={}",
+                command.arg(format!(
+                    "{}={}",
                     k.to_str().ok_or(anyhow!("invalid key"))?,
                     value.to_str().ok_or(anyhow!("invalid value"))?
                 ));

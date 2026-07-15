@@ -15,7 +15,7 @@
 
 use crate::Command;
 use anyhow::{anyhow, bail, Result};
-use base64::{Engine as _, engine::general_purpose};
+use base64::{engine::general_purpose, Engine as _};
 use std::env;
 use std::fs::{create_dir, read, read_dir, remove_dir_all, write};
 use std::io::Write;
@@ -27,44 +27,33 @@ const APPLET: &str = "UEsDBAoAAAAAABg+cVMAAAAAAAAAAAAAAAAJABwAQ29udGVudHMvVVQJAA
 /// The implementation of state check and elevated executing varies on each platform
 impl Command {
     /// Check the state the current program running
-    /// 
+    ///
     /// Return `true` if the program is running as root, otherwise false
-    /// 
+    ///
     /// # Examples
     ///
     /// ```no_run
     /// use elevated_command::Command;
     ///
-    /// fn main() {
-    ///     let is_elevated = Command::is_elevated();
-    ///
-    /// }
+    /// let is_elevated = Command::is_elevated();
     /// ```
     pub fn is_elevated() -> bool {
-        let uid = unsafe { 
-            libc::getuid()
-        };
-        if uid == 0 { 
-            true 
-        } else { 
-            false 
-        }
+        let uid = unsafe { libc::getuid() };
+        uid == 0
     }
 
-    /// Prompting the user with a graphical OS dialog for the root password, 
+    /// Prompting the user with a graphical OS dialog for the root password,
     /// excuting the command with escalated privileges, and return the output
-    /// 
+    ///
     /// # Examples
     ///
     /// ```no_run
     /// use elevated_command::Command;
     /// use std::process::Command as StdCommand;
     ///
-    /// fn main() {
-    ///     let mut cmd = StdCommand::new("path to the application");
-    ///     let elevated_cmd = Command::new(cmd);
-    ///     let output = elevated_cmd.output().unwrap();
-    /// }
+    /// let mut cmd = StdCommand::new("path to the application");
+    /// let elevated_cmd = Command::new(cmd);
+    /// let output = elevated_cmd.output().unwrap();
     /// ```
     pub fn output(&self) -> Result<Output> {
         let temp = std::env::temp_dir();
@@ -74,20 +63,15 @@ impl Command {
             remove_dir_all(&path)?;
         }
         create_dir(&path)?;
-        
+
         let applet_zip = path.join("sudo-prompt-applet.zip");
         let contents = general_purpose::STANDARD.decode(APPLET).unwrap();
         write(&applet_zip, &contents[..])?;
 
         let mut command = StdCommand::new("unzip");
         log::debug!("Applet folder: {}", path.to_str().unwrap());
-                command.current_dir(&path);
-        command.args([
-            "-o",
-            "sudo-prompt-applet.zip",
-            "-d",
-            "applet.app",
-        ]);
+        command.current_dir(&path);
+        command.args(["-o", "sudo-prompt-applet.zip", "-d", "applet.app"]);
         let output = command.output()?;
         if !output.status.success() {
             bail!("unzip failed: {}", output.status.to_string());
@@ -97,7 +81,10 @@ impl Command {
 
         // overwrite the icon
         if let Some(ref contents) = self.icon {
-            let icon = applet.join("Contents").join("Resources").join("applet.icns");
+            let icon = applet
+                .join("Contents")
+                .join("Resources")
+                .join("applet.icns");
             write(&icon, &contents[..])?;
         }
 
@@ -107,33 +94,49 @@ impl Command {
             "write",
             plist.to_str().unwrap(),
             "CFBundleName",
-            format!("{} Password Prompt", self.name.as_ref().map_or("Sudo", |s| s.as_str())).as_str(),
+            format!(
+                "{} Password Prompt",
+                self.name.as_ref().map_or("Sudo", |s| s.as_str())
+            )
+            .as_str(),
         ]);
         let output = command.output()?;
         if !output.status.success() {
             bail!("defaults failed: {}", output.status.to_string());
         }
 
-        let prompt_command = applet.join("Contents").join("MacOS").join("sudo-prompt-command");
-        let mut contents: Vec<u8> = vec!();
+        let prompt_command = applet
+            .join("Contents")
+            .join("MacOS")
+            .join("sudo-prompt-command");
+        let mut contents: Vec<u8> = vec![];
         let mut writer: Box<&mut dyn Write> = Box::new(&mut contents);
         for (k, v) in self.cmd.get_envs() {
             if let Some(value) = v {
-                writeln!(writer, r#"export {}="{}""#, 
+                writeln!(
+                    writer,
+                    r#"export {}="{}""#,
                     k.to_str().ok_or(anyhow!("invalid key"))?,
                     value.to_str().ok_or(anyhow!("invalid value"))?,
                 )?;
             }
         }
 
-        let args = self.cmd.get_args()
+        let args = self
+            .cmd
+            .get_args()
             .map(|c| c.to_str().unwrap().to_string())
             .collect::<Vec<String>>();
         if args.is_empty() {
             writeln!(writer, "{}", self.cmd.get_program().to_str().unwrap())?;
         } else {
             let arg_str = args.join(" ");
-            writeln!(writer, "{} {}", self.cmd.get_program().to_str().unwrap(), arg_str)?;
+            writeln!(
+                writer,
+                "{} {}",
+                self.cmd.get_program().to_str().unwrap(),
+                arg_str
+            )?;
         }
         write(prompt_command, &contents[..])?;
 
